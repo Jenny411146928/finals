@@ -1,69 +1,68 @@
-const board = document.getElementById("board");
-const resetBtn = document.getElementById("resetBtn");
+const socket = io();
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const roomIdInput = document.getElementById('roomId');
+const joinBtn = document.getElementById('joinBtn');
+const guessInput = document.getElementById('guessInput');
+const messages = document.getElementById('messages');
+const timer = document.getElementById('timer');
+const welcome = document.getElementById('welcome');
+const game = document.getElementById('game');
 
-let currentPlayer = "X"; // "X" 開始
-let gameBoard = ["", "", "", "", "", "", "", "", ""]; // 儲存遊戲格子的狀態
+canvas.width = 800;
+canvas.height = 600;
 
-// 設定遊戲格子
-function createBoard() {
-  board.innerHTML = "";
-  gameBoard.forEach((cell, index) => {
-    const cellElement = document.createElement("div");
-    cellElement.classList.add("cell");
-    cellElement.textContent = cell;
-    cellElement.addEventListener("click", () => handleCellClick(index));
-    board.appendChild(cellElement);
-  });
-}
+let drawing = false;
+let isDrawer = false;
+let roomId;
 
-// 處理格子點擊事件
-function handleCellClick(index) {
-  if (gameBoard[index] === "") {
-    gameBoard[index] = currentPlayer;
-    currentPlayer = currentPlayer === "X" ? "O" : "X";
-    createBoard();
-    checkWinner();
-  }
-}
+joinBtn.addEventListener('click', () => {
+    roomId = roomIdInput.value;
+    socket.emit('joinRoom', roomId);
+    welcome.style.display = 'none';
+    game.style.display = 'block';
+});
 
-// 檢查遊戲是否結束或有贏家
-function checkWinner() {
-  const winPatterns = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ];
+canvas.addEventListener('mousedown', () => {
+    if (isDrawer) drawing = true;
+});
 
-  for (let pattern of winPatterns) {
-    const [a, b, c] = pattern;
-    if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
-      alert(`${gameBoard[a]} wins!`);
-      resetGame();
-      return;
+canvas.addEventListener('mouseup', () => {
+    drawing = false;
+    ctx.beginPath();
+});
+
+canvas.addEventListener('mousemove', (event) => {
+    if (!drawing || !isDrawer) return;
+    const x = event.offsetX;
+    const y = event.offsetY;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    socket.emit('draw', { x, y, roomId });
+});
+
+socket.on('draw', ({ x, y }) => {
+    ctx.lineTo(x, y);
+    ctx.stroke();
+});
+
+socket.on('role', (data) => {
+    isDrawer = data.role === 'drawer';
+    if (isDrawer) {
+        alert(`You are the drawer! Your word is: ${data.word}`);
+    } else {
+        alert('You are the guesser! Start guessing!');
     }
-  }
+});
 
-  // 檢查平局
-  if (!gameBoard.includes("")) {
-    alert("It's a tie!");
-    resetGame();
-  }
-}
+socket.on('correctGuess', ({ playerId, guess }) => {
+    messages.innerText = `Player ${playerId} guessed correctly: ${guess}`;
+});
 
-// 重設遊戲
-function resetGame() {
-  gameBoard = ["", "", "", "", "", "", "", "", ""];
-  currentPlayer = "X";
-  createBoard();
-}
+socket.on('wrongGuess', (guess) => {
+    messages.innerText = `Wrong guess: ${guess}`;
+});
 
-// 初始化遊戲板
-createBoard();
-
-// 重設按鈕事件
-resetBtn.addEventListener("click", resetGame);
+socket.on('timer', (timeLeft) => {
+    timer.innerText = `Time left: ${timeLeft}s`;
+});

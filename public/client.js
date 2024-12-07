@@ -1,46 +1,68 @@
 const socket = io();
-let isDrawer = false;
-
-// 畫布設定
-const canvas = document.getElementById('drawingCanvas');
+const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
-let drawing = false;
+const roomIdInput = document.getElementById('roomId');
+const joinBtn = document.getElementById('joinBtn');
+const guessInput = document.getElementById('guessInput');
+const messages = document.getElementById('messages');
+const timer = document.getElementById('timer');
+const welcome = document.getElementById('welcome');
+const game = document.getElementById('game');
 
-// 畫布大小
 canvas.width = 800;
 canvas.height = 600;
 
-// 畫畫事件處理
-canvas.addEventListener('mousedown', startDrawing);
-canvas.addEventListener('mousemove', draw);
-canvas.addEventListener('mouseup', stopDrawing);
-canvas.addEventListener('mouseout', stopDrawing);
+let drawing = false;
+let isDrawer = false;
+let roomId;
 
-function startDrawing(e) {
-  if (!isDrawer) return;
-  drawing = true;
-  draw(e); // 確保點擊的第一點也畫出來
-}
+joinBtn.addEventListener('click', () => {
+    roomId = roomIdInput.value;
+    socket.emit('joinRoom', roomId);
+    welcome.style.display = 'none';
+    game.style.display = 'block';
+});
 
-function draw(e) {
-  if (!drawing || !isDrawer) return;
+canvas.addEventListener('mousedown', () => {
+    if (isDrawer) drawing = true;
+});
 
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+canvas.addEventListener('mouseup', () => {
+    drawing = false;
+    ctx.beginPath();
+});
 
-  ctx.lineWidth = 3;
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = '#000000';
+canvas.addEventListener('mousemove', (event) => {
+    if (!drawing || !isDrawer) return;
+    const x = event.offsetX;
+    const y = event.offsetY;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    socket.emit('draw', { x, y, roomId });
+});
 
-  ctx.lineTo(x, y);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x, y);
+socket.on('draw', ({ x, y }) => {
+    ctx.lineTo(x, y);
+    ctx.stroke();
+});
 
-  // 傳送畫圖數據到伺服器
-  socket.emit('draw', { x, y });
-}
+socket.on('role', (data) => {
+    isDrawer = data.role === 'drawer';
+    if (isDrawer) {
+        alert(`You are the drawer! Your word is: ${data.word}`);
+    } else {
+        alert('You are the guesser! Start guessing!');
+    }
+});
 
-function stopDrawing() {
-  if (!isDrawer) return;
+socket.on('correctGuess', ({ playerId, guess }) => {
+    messages.innerText = `Player ${playerId} guessed correctly: ${guess}`;
+});
+
+socket.on('wrongGuess', (guess) => {
+    messages.innerText = `Wrong guess: ${guess}`;
+});
+
+socket.on('timer', (timeLeft) => {
+    timer.innerText = `Time left: ${timeLeft}s`;
+});

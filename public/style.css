@@ -1,51 +1,18 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f3f3f3;
+    font-family: Arial, sans-serif;
+    text-align: center;
 }
 
-.game-container {
-  text-align: center;
+#canvas {
+    border: 1px solid black;
+    display: block;
+    margin: 20px auto;
 }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(3, 100px);
-  grid-template-rows: repeat(3, 100px);
-  gap: 5px;
-  margin: 20px 0;
+#guessInput {
+    margin-top: 20px;
+    width: 80%;
+    padding: 10px;
+    font-size: 16px;
 }
 
-.cell {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100px;
-  height: 100px;
-  background-color: #fff;
-  border: 2px solid #000;
-  font-size: 2rem;
-  cursor: pointer;
-}
-
-button {
-  padding: 10px 20px;
-  font-size: 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
