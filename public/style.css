@@ -3,7 +3,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #c5d0e2; /* 修改為 RGB 顏色 */
+    background-color: rgb(255, 255, 255); /* 修改為 RGB 顏色 */
     color: #333; /* 修改字體顏色以便與背景顯示 */
     display: flex;
     justify-content: center;
@@ -14,11 +14,11 @@ body {
 
 /* 設置歡迎畫面 */
 #welcome {
-    background: rgba(0, 0, 0, 0.7); /* 半透明背景 */
-    padding: 40px 60px;
+    background: rgb(197, 208, 226);  /* 設定背景顏色 */
+    padding: 20px;
     border-radius: 8px;
     width: 400px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 可選，增加陰影效果 */
 }
 
 h1 {
@@ -32,30 +32,23 @@ p {
 }
 
 #roomId {
-    width: 80%;
-    padding: 12px;
+    padding: 10px;
     font-size: 16px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    border: none;
-    box-sizing: border-box;
+    margin: 10px 0;
+    width: 200px;
 }
 
 #joinBtn {
-    width: 80%;
-    padding: 12px;
-    font-size: 18px;
-    color: #fff;
-    background-color: #2575fc;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
 }
 
 /* 按鈕懸停效果 */
 #joinBtn:hover {
-    background-color: #6a11cb;
+    background-color: #45a049;;
 }
 
 /* 設置遊戲畫面 */
