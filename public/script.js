@@ -18,9 +18,13 @@ let roomId;
 
 joinBtn.addEventListener('click', () => {
     roomId = roomIdInput.value;
-    socket.emit('joinRoom', roomId);
-    welcome.style.display = 'none';
-    game.style.display = 'block';
+    if (roomId.trim()) {
+        socket.emit('joinRoom', roomId);
+        welcome.style.display = 'none';
+        game.style.display = 'block';
+    } else {
+        alert("請輸入有效的房間 ID");
+    }
 });
 
 canvas.addEventListener('mousedown', () => {
@@ -49,20 +53,20 @@ socket.on('draw', ({ x, y }) => {
 socket.on('role', (data) => {
     isDrawer = data.role === 'drawer';
     if (isDrawer) {
-        alert(`You are the drawer! Your word is: ${data.word}`);
+        alert(`你是畫畫的玩家！你的題目是: ${data.word}`);
     } else {
-        alert('You are the guesser! Start guessing!');
+        alert('你是猜畫的玩家！開始猜測吧！');
     }
 });
 
 socket.on('correctGuess', ({ playerId, guess }) => {
-    messages.innerText = `Player ${playerId} guessed correctly: ${guess}`;
+    messages.innerText = `玩家 ${playerId} 猜對了: ${guess}`;
 });
 
 socket.on('wrongGuess', (guess) => {
-    messages.innerText = `Wrong guess: ${guess}`;
+    messages.innerText = `錯誤猜測: ${guess}`;
 });
 
 socket.on('timer', (timeLeft) => {
-    timer.innerText = `Time left: ${timeLeft}s`;
+    timer.innerText = `剩餘時間: ${timeLeft}s`;
 });
