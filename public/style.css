@@ -1,86 +1,17 @@
-/* 設置頁面背景 */
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: rgb(255, 255, 255); /* 修改為 RGB 顏色 */
-    color: #333; /* 修改字體顏色以便與背景顯示 */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
     text-align: center;
 }
 
-/* 設置歡迎畫面 */
-#welcome {
-    background: rgb(197, 208, 226);  /* 設定背景顏色 */
-    padding: 20px;
-    border-radius: 8px;
-    width: 400px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 可選，增加陰影效果 */
-}
-
-h1 {
-    font-size: 36px;
-    margin-bottom: 20px;
-}
-
-p {
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
-#roomId {
-    padding: 10px;
-    font-size: 16px;
-    margin: 10px 0;
-    width: 200px;
-}
-
-#joinBtn {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
-
-/* 按鈕懸停效果 */
-#joinBtn:hover {
-    background-color: #45a049;;
-}
-
-/* 設置遊戲畫面 */
-#game {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 #canvas {
-    border: 1px solid #333;
+    border: 1px solid black;
     display: block;
-    margin-top: 20px;
+    margin: 20px auto;
 }
 
 #guessInput {
+    margin-top: 20px;
     width: 80%;
     padding: 10px;
     font-size: 16px;
-    margin-top: 20px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-/* 顯示計時器與訊息 */
-#timer {
-    font-size: 24px;
-    margin-top: 20px;
-}
-
-#messages {
-    font-size: 18px;
-    margin-top: 10px;
-    color: #ffcc00;
 }

@@ -3,24 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>你畫我猜 - 登入</title>
+    <title>你畫我猜</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div id="welcome">
-        <h1>歡迎來到 你畫我猜！</h1>
-        <p>請輸入房間 ID 以加入遊戲</p>
-        <input type="text" id="roomId" placeholder="Enter room ID" />
-        <button id="joinBtn">加入房間</button>
+        <input type="text" id="roomId" placeholder="Enter room ID">
+        <button id="joinBtn">Join Room</button>
     </div>
-
     <div id="game" style="display: none;">
         <canvas id="canvas"></canvas>
-        <input type="text" id="guessInput" placeholder="Enter your guess" />
+        <input type="text" id="guessInput" placeholder="Enter your guess">
         <p id="timer"></p>
         <p id="messages"></p>
     </div>
-
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
