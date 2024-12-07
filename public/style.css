@@ -3,8 +3,8 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(to right, #6a11cb, #2575fc);
-    color: #fff;
+    background-color: rgb(197, 208, 226); /* 修改為 RGB 顏色 */
+    color: #333; /* 修改字體顏色以便與背景顯示 */
     display: flex;
     justify-content: center;
     align-items: center;
