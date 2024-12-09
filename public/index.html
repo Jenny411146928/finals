@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh">
 <head>
@@ -7,54 +8,96 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js" defer></script>
   <style>
-    /* 全局樣式 */
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: rgb(197, 208, 226);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    /* 遊戲畫面容器 */
-    #game-screen {
+  	   #room-screen, #game-screen {
       display: none;
-      text-align: center;
     }
-
-    /* 畫布獨立容器 */
-    .canvas-container {
-      margin: 20px auto;
-      padding: 20px;
-      background-color: #f0f0f0; /* 畫布外圍背景 */
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      display: inline-block;
-    }
-
-    /* 畫布樣式 */
-    #drawing-canvas {
+    canvas {
       border: 1px solid black;
-      background-color: white; /* 畫布背景設為白色 */
     }
+
+/* 設定登入畫面的背景和容器樣式 */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: rgb(197, 208, 226); /* 你想要的背景顏色 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* 標題樣式 */
+.login-title {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+/* 輸入框樣式 */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.login-input {
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* 按鈕樣式 */
+.login-button {
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover {
+  background-color: #45a049;
+}
+
   </style>
 </head>
 <body>
+  <!-- 登入畫面 -->
+  <div id="login-screen" class="login-container">
+    <h1 class="login-title">Guess Game</h1>
+    <div class="input-group">
+    <input id="room-id" class="login-input" placeholder="輸入房間名稱">
+    <input id="player-name" class="login-input" placeholder="輸入玩家名稱">
+    </div>
+    <button id="join-room-btn">加入房間</button>
+  </div>
+
+  <!-- 房間畫面 -->
+  <div id="room-screen">
+    <h2>房間</h2>
+    <ul id="player-list"></ul>
+    <button id="start-game-btn" style="display: none;">開始遊戲</button>
+  </div>
 
   <!-- 遊戲畫面 -->
   <div id="game-screen">
-    <h2>畫圖區域</h2>
-    <div class="canvas-container">
-      <canvas id="drawing-canvas" width="500" height="500"></canvas>
-    </div>
-    <div>
-      <input id="guess-input" placeholder="猜測答案">
-      <button id="guess-btn">提交猜測</button>
-      <button id="clear-btn" style="display: none;">清除畫布</button>
-    </div>
+    <div id="word-to-draw"></div>
+    <canvas id="drawing-canvas" width="500" height="500"></canvas>
+    <input id="guess-input" placeholder="猜測答案">
+    <button id="guess-btn">提交猜測</button>
+    <button id="clear-btn" style="display: none;">清除畫布</button>
   </div>
-
 </body>
 </html>
