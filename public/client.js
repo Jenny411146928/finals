@@ -3,11 +3,17 @@ const socket = io();
 document.getElementById('join-room-btn').addEventListener('click', () => {
   const roomId = document.getElementById('room-id').value.trim();
   const playerName = document.getElementById('player-name').value.trim();
+  const backgroundMusic = document.getElementById('background-music1');// 獲取音樂元素
+
 
   if (roomId && playerName) {
     socket.emit('joinRoom', roomId, playerName);
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('room-screen').style.display = 'block';
+
+    // 播放音樂
+    backgroundMusic.play(); // 開始播放背景音樂
+
   } else {
     alert('請輸入房間名稱和玩家名稱！');
   }
@@ -50,6 +56,16 @@ socket.on('gameStarted', ({ drawer, word }) => {
   document.getElementById('room-screen').style.display = 'none';
   document.getElementById('game-screen').style.display = 'block';
 });
+
+socket.on('gameOver', () => {
+  const backgroundMusic = document.getElementById('background-music1');
+  backgroundMusic.pause(); // 停止音樂
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('room-screen').style.display = 'block';
+});
+
+
+
 
 // 繪圖相關
 const canvas = document.getElementById('drawing-canvas');

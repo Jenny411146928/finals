@@ -4,9 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Guess Game</title>
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js" defer></script>
+
   <style>
   	   #room-screen, #game-screen {
       display: none;
@@ -74,6 +76,12 @@ body {
   </style>
 </head>
 <body>
+	<!-- 背景音樂 -->
+	<audio id="background-music1" autoplay loop>
+	  <source src="background-music1.mp3" type="audio/mp3">
+	  您的瀏覽器不支援音樂播放。
+	</audio>
+	
   <!-- 登入畫面 -->
   <div id="login-screen" class="login-container">
     <h1 class="login-title">Guess Game</h1>
