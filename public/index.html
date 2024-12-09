@@ -8,20 +8,72 @@
   <script src="/socket.io/socket.io.js"></script>
   <script src="client.js" defer></script>
   <style>
-    #room-screen, #game-screen {
-      display: none;
-    }
-    canvas {
-      border: 1px solid black;
-    }
+/* 設定登入畫面的背景和容器樣式 */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: rgb(197, 208, 226); /* 你想要的背景顏色 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+/* 標題樣式 */
+.login-title {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+/* 輸入框樣式 */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.login-input {
+  padding: 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* 按鈕樣式 */
+.login-button {
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover {
+  background-color: #45a049;
+}
+
   </style>
 </head>
 <body>
   <!-- 登入畫面 -->
-  <div id="login-screen">
-    <h1>Guess Game</h1>
-    <input id="room-id" placeholder="輸入房間名稱">
-    <input id="player-name" placeholder="輸入玩家名稱">
+  <div id="login-screen" class="login-container">
+    <h1 class="login-title">Guess Game</h1>
+    <div class="input-group">
+    <input id="room-id" class="login-input" placeholder="輸入房間名稱">
+    <input id="player-name" class="login-input" placeholder="輸入玩家名稱">
+    </div>
     <button id="join-room-btn">加入房間</button>
   </div>
 
