@@ -1,82 +1,104 @@
 const express = require('express');
 const http = require('http');
-const { Server } = require('socket.io');
+const socketIo = require('socket.io');
+
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = socketIo(server);
 
-let rooms = {}; // 儲存房間的狀態
-let fruitWords = ['apple', 'banana', 'cherry', 'grape', 'orange', 'pear', 'peach', 'pineapple', 'strawberry', 'watermelon'];
+let rooms = {};
 
-app.use(express.static('public')); // 提供靜態檔案
+app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.id}`);
+  console.log(`玩家 ${socket.id} 已連接`);
 
-    // 玩家加入房間
-    socket.on('joinRoom', (roomId) => {
-        if (!rooms[roomId]) {
-            rooms[roomId] = { players: [], currentWord: '', drawer: null };
-        }
-        const room = rooms[roomId];
-        room.players.push(socket.id);
+  socket.on('joinRoom', (roomId, playerName) => {
+    if (!rooms[roomId]) {
+      rooms[roomId] = { players: [], gameStarted: false };
+    }
 
-        socket.join(roomId);
-        io.to(roomId).emit('message', `Player ${socket.id} joined the room!`);
+    const room = rooms[roomId];
+    room.players.push({ id: socket.id, name: playerName });
+    socket.join(roomId);
 
-        if (room.players.length === 2) {
-            startGame(roomId);
-        }
-    });
+    io.to(roomId).emit('updatePlayers', room.players);
 
-    // 接收繪圖數據並廣播給其他玩家
-    socket.on('draw', (data) => {
-        const roomId = data.roomId;
-        socket.to(roomId).emit('draw', data);
-    });
+    // 如果玩家是房主，告知可以開始遊戲
+    if (room.players.length === 1) {
+      socket.emit('isRoomOwner');
+    }
+  });
 
-    // 接收猜測並檢查答案
-    socket.on('guess', (data) => {
-        const { roomId, guess } = data;
-        const room = rooms[roomId];
+  socket.on('startGame', (roomId) => {
+    const room = rooms[roomId];
+    if (room && room.players.length > 1) {
+      room.gameStarted = true;
 
-        if (guess.toLowerCase() === room.currentWord) {
-            io.to(roomId).emit('correctGuess', { playerId: socket.id, guess });
-            switchRoles(roomId);
+      // 隨機選擇畫畫者
+      const drawerIndex = Math.floor(Math.random() * room.players.length);
+      room.drawer = room.players[drawerIndex];
+      room.word = '樹'; // 可以改為隨機題目生成
+
+      // 發送遊戲開始的訊息，並且給畫畫者題目
+      room.players.forEach(player => {
+        if (player.id === room.drawer.id) {
+          // 只有畫畫者能看到題目
+          io.to(player.id).emit('gameStarted', {
+            drawer: room.drawer,
+            word: room.word,  // 這裡才會傳送題目給畫畫者
+          });
         } else {
-            socket.emit('wrongGuess', guess);
+          // 非畫畫者看不到題目
+          io.to(player.id).emit('gameStarted', {
+            drawer: room.drawer,
+            word: null,  // 非畫畫者不顯示題目
+          });
         }
-    });
+      });
+    }
+  });
 
-    // 處理玩家斷線
-    socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`);
-        for (const roomId in rooms) {
-            const room = rooms[roomId];
-            room.players = room.players.filter((player) => player !== socket.id);
-            if (room.players.length === 0) delete rooms[roomId];
-        }
-    });
+  socket.on('draw', (roomId, data) => {
+    const room = rooms[roomId];
+    if (room && room.drawer.id === socket.id) {
+      // 只有畫畫者才能畫畫
+      socket.to(roomId).emit('draw', data);
+    }
+  });
+
+  socket.on('clearCanvas', (roomId) => {
+    const room = rooms[roomId];
+    if (room && room.drawer.id === socket.id) {
+      // 只有畫畫者才能清除畫布
+      io.to(roomId).emit('clearCanvas');
+    }
+  });
+
+  socket.on('guess', (roomId, guess) => {
+    const room = rooms[roomId];
+    if (room && room.word === guess) {
+      io.to(roomId).emit('correctGuess', `${guess} 是正確答案！`);
+    } else {
+      socket.emit('incorrectGuess', `${guess} 錯誤，再試試！`);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    for (const roomId in rooms) {
+      const room = rooms[roomId];
+      room.players = room.players.filter(player => player.id !== socket.id);
+
+      if (room.players.length === 0) {
+        delete rooms[roomId];
+      } else {
+        io.to(roomId).emit('updatePlayers', room.players);
+      }
+    }
+  });
 });
 
-// 開始遊戲，選擇題目和角色
-function startGame(roomId) {
-    const room = rooms[roomId];
-    room.currentWord = fruitWords[Math.floor(Math.random() * fruitWords.length)];
-    room.drawer = room.players[0]; // 第一位玩家為繪畫者
-    io.to(room.drawer).emit('role', { role: 'drawer', word: room.currentWord });
-    io.to(room.players[1]).emit('role', { role: 'guesser' });
-
-    io.to(roomId).emit('message', `Game started! ${room.drawer} is drawing.`);
-}
-
-// 交換角色
-function switchRoles(roomId) {
-    const room = rooms[roomId];
-    room.players.reverse(); // 交換玩家順序
-    startGame(roomId);
-}
-
-server.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`伺服器運行中，監聽端口：${PORT}`);
 });

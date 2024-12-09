@@ -1,68 +1,124 @@
 const socket = io();
-const canvas = document.getElementById('canvas');
+
+document.getElementById('join-room-btn').addEventListener('click', () => {
+  const roomId = document.getElementById('room-id').value.trim();
+  const playerName = document.getElementById('player-name').value.trim();
+
+  if (roomId && playerName) {
+    socket.emit('joinRoom', roomId, playerName);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('room-screen').style.display = 'block';
+  } else {
+    alert('請輸入房間名稱和玩家名稱！');
+  }
+});
+
+document.getElementById('start-game-btn').addEventListener('click', () => {
+  const roomId = document.getElementById('room-id').value.trim();
+  socket.emit('startGame', roomId);
+});
+
+socket.on('updatePlayers', (players) => {
+  const playerList = document.getElementById('player-list');
+  playerList.innerHTML = ''; // 清空玩家列表
+  players.forEach(player => {
+    const listItem = document.createElement('li');
+    listItem.textContent = player.name;
+    playerList.appendChild(listItem);
+  });
+});
+
+socket.on('isRoomOwner', () => {
+  document.getElementById('start-game-btn').style.display = 'block';
+});
+
+socket.on('gameStarted', ({ drawer, word }) => {
+  alert(`${drawer.name} 是畫畫者，準備開始遊戲！`);
+
+  if (socket.id === drawer.id) {
+    // 畫畫者能看到題目
+    document.getElementById('word-to-draw').innerText = `你的題目是：${word}`;
+    enableDrawing(); // 只有畫畫者能畫
+    document.getElementById('clear-btn').style.display = 'block';
+  } else {
+    // 非畫畫者看不到題目
+    document.getElementById('word-to-draw').innerText = '';
+    disableDrawing(); // 禁止其他人畫
+    document.getElementById('clear-btn').style.display = 'none';
+  }
+
+  document.getElementById('room-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+});
+
+// 繪圖相關
+const canvas = document.getElementById('drawing-canvas');
 const ctx = canvas.getContext('2d');
-const roomIdInput = document.getElementById('roomId');
-const joinBtn = document.getElementById('joinBtn');
-const guessInput = document.getElementById('guessInput');
-const messages = document.getElementById('messages');
-const timer = document.getElementById('timer');
-const welcome = document.getElementById('welcome');
-const game = document.getElementById('game');
-
-canvas.width = 800;
-canvas.height = 600;
-
 let drawing = false;
-let isDrawer = false;
-let roomId;
+let lastPos = null;
 
-joinBtn.addEventListener('click', () => {
-    roomId = roomIdInput.value;
-    socket.emit('joinRoom', roomId);
-    welcome.style.display = 'none';
-    game.style.display = 'block';
+function enableDrawing() {
+  canvas.addEventListener('mousedown', startDrawing);
+  canvas.addEventListener('mouseup', stopDrawing);
+  canvas.addEventListener('mousemove', draw);
+}
+
+function disableDrawing() {
+  canvas.removeEventListener('mousedown', startDrawing);
+  canvas.removeEventListener('mouseup', stopDrawing);
+  canvas.removeEventListener('mousemove', draw);
+}
+
+function startDrawing(e) {
+  drawing = true;
+  lastPos = { x: e.offsetX, y: e.offsetY };
+}
+
+function stopDrawing() {
+  drawing = false;
+  lastPos = null;
+}
+
+function draw(e) {
+  if (!drawing) return;
+
+  const currentPos = { x: e.offsetX, y: e.offsetY };
+  drawLine(lastPos, currentPos);
+  const roomId = document.getElementById('room-id').value.trim();
+  socket.emit('draw', roomId, { start: lastPos, end: currentPos });
+  lastPos = currentPos;
+}
+
+function drawLine(start, end) {
+  if (!start || !end) return;
+  ctx.beginPath();
+  ctx.moveTo(start.x, start.y);
+  ctx.lineTo(end.x, end.y);
+  ctx.stroke();
+}
+
+socket.on('draw', (data) => {
+  drawLine(data.start, data.end);
 });
 
-canvas.addEventListener('mousedown', () => {
-    if (isDrawer) drawing = true;
+document.getElementById('clear-btn').addEventListener('click', () => {
+  const roomId = document.getElementById('room-id').value.trim();
+  socket.emit('clearCanvas', roomId);
 });
 
-canvas.addEventListener('mouseup', () => {
-    drawing = false;
-    ctx.beginPath();
+socket.on('clearCanvas', () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-canvas.addEventListener('mousemove', (event) => {
-    if (!drawing || !isDrawer) return;
-    const x = event.offsetX;
-    const y = event.offsetY;
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    socket.emit('draw', { x, y, roomId });
+// 猜測功能
+document.getElementById('guess-btn').addEventListener('click', () => {
+  const guess = document.getElementById('guess-input').value.trim();
+  const roomId = document.getElementById('room-id').value.trim();
+  if (guess) {
+    socket.emit('guess', roomId, guess);
+    document.getElementById('guess-input').value = ''; // 清空輸入框
+  }
 });
 
-socket.on('draw', ({ x, y }) => {
-    ctx.lineTo(x, y);
-    ctx.stroke();
-});
-
-socket.on('role', (data) => {
-    isDrawer = data.role === 'drawer';
-    if (isDrawer) {
-        alert(`You are the drawer! Your word is: ${data.word}`);
-    } else {
-        alert('You are the guesser! Start guessing!');
-    }
-});
-
-socket.on('correctGuess', ({ playerId, guess }) => {
-    messages.innerText = `Player ${playerId} guessed correctly: ${guess}`;
-});
-
-socket.on('wrongGuess', (guess) => {
-    messages.innerText = `Wrong guess: ${guess}`;
-});
-
-socket.on('timer', (timeLeft) => {
-    timer.innerText = `Time left: ${timeLeft}s`;
-});
+socket.on('correctGuess', (message) => alert(message));
+socket.on('incorrectGuess', (message) => alert(message));
